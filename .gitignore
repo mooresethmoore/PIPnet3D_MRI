@@ -2,3 +2,7 @@ logs/
 __pycache__/
 data/
 visualization/
+localExplanationChecker_forJake.m
+ApproxTimeEpoch_pretrain_DS40_point20Thresh.txt
+ApproxTimeEpoch_pretrain_DS32_point20Thresh.txt
+ApproxTimeEpoch_pretrain_DS30_point20Thresh.txt
