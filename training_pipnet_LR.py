@@ -423,12 +423,14 @@ def train():
         # accuracy and mean loss for each epoch
 
 
-        #TODO recreate some log but for now, we skip
+        #TODO recreate some log  for classes>2, but for now, we skip
         
         log.create_log('log_epoch_overview',
                         'epoch',
                         'test_top1_acc',
                         'test_f1',
+                        'test_sensitivity',
+                        'test_specificity',
                         'almost_sim_nonzeros',
                         'local_size_all_classes',
                         'almost_nonzeros_pooled', 
@@ -511,6 +513,8 @@ def train():
         log.log_values('log_epoch_overview', 
                         epoch, 
                         "n.a.", 
+                        "n.a.",
+                        "n.a.",
                         "n.a.", 
                         "n.a.", 
                         "n.a.", 
@@ -697,6 +701,8 @@ def train():
             epoch, 
             eval_info['top1_accuracy'], 
             eval_info['top5_accuracy'], 
+            eval_info['sensitivity'],
+            eval_info['specificity'],
             eval_info['almost_sim_nonzeros'], 
             eval_info['local_size_all_classes'], 
             eval_info['almost_nonzeros'], 
@@ -837,12 +843,9 @@ def train():
 
 
 if __name__=='__main__':
-    args['log_dir']=f"logs/PT_tan5_backbone1en4_flipTrain"
-    args['lr_backbone']=.0001
-    args['seed']=42
-    train()
-    #for i in [69]:
-        #args['log_dir']=f"logs/k{i}"
-        #args['seed']=42+5*i
-        #train()
+
+    for i in [4]:
+        args['log_dir']=f"logs/PT_tan5_backbone1en4_flipTrain_fold{i}"
+        args['seed']=42+5*i
+        train()
     

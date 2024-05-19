@@ -223,6 +223,8 @@ def eval_pipnet(
         print("TP: ", tp, "FN: ",fn, "FP:", fp, "TN:", tn, flush=True)
         sensitivity = tp/(tp+fn)
         specificity = tn/(tn+fp)
+        info['sensitivity']=sensitivity
+        info['specificity']=specificity
         
         print("\n Epoch",epoch, flush=True)
         print("Confusion matrix: ", cm, flush=True)
@@ -234,13 +236,13 @@ def eval_pipnet(
                           classname, 
                           classidx,
                           ") (TPR, Sensitivity):", 
-                          tp/(tp+fn))
+                          sensitivity)
                 elif classidx == 1:
                     print("Accuracy negative class (", 
                           classname, 
                           classidx,
                           ") (TNR, Specificity):", 
-                          tn/(tn+fp))
+                          specificity)
                     
         except ValueError:
             pass

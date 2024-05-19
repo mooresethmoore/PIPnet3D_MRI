@@ -149,7 +149,7 @@ dataloaders=get_dataloaders(dataset_h5path=inputData,
                             val_p=.05,
                             batchSize=args['batch_size'],
                             seed=args['seed'],
-                            kMeansSaveDir="data/kMeans_DS32.json")
+                            kMeansSaveDir=None)
 
 trainloader = dataloaders[0]
 trainloader_pretraining = dataloaders[1]
@@ -208,7 +208,7 @@ except:
 
 def returnInputGradient(patientKey='109_R',softmaxThresh=.5,returnNet=False):
 
-    gradients=[]
+    gradients=dict()
     
     arr,label=projectloader.dataset[inputKeys[10]]
     xs=arr.unsqueeze(0).to(device)
@@ -227,12 +227,12 @@ def returnInputGradient(patientKey='109_R',softmaxThresh=.5,returnNet=False):
             for i,j,k in releventIndices[1:]:
                 gradient+=torch.autograd.grad(features[0][proto][i][j][k],xs,retain_graph=True)[0]
             gradient=gradient.detach().cpu().numpy()
-            gradients.append(gradient)
+            gradients[proto]=gradient
     
-    gradients=np.array(gradients)
+    #gradients=np.array(gradients)
     if returnNet:
         return gradients,net 
     else:
         return gradients
 
-print(returnInputGradient())
+#print(returnInputGradient())
