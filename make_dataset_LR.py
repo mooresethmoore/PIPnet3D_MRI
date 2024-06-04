@@ -300,11 +300,24 @@ def construct_data(
         val_p=.05,
         seed=42,
         kMeansSaveDir=None,
-        flipTrain=True
+        stratSampling=True,
+        flipTrain=True,
+        excludePatients=[],
     ):
 
     with h5py.File(dataset_h5path, 'r') as f:
-        validPatients=list(f.keys())
+        validPatients=list(set(f.keys())-set(excludePatients))
+        if stratSampling:
+            ### under this convention of LR split, we are guarenteed 50:50
+            classVals={0:[],1:[]}
+            for k in validPatients:
+                L,R=f[k].attrs['LRflag']
+                if L==1:
+                    classVals[1].append(f"{k}_L")
+                    classVals[0].append(f"{k}_R")
+                else:
+                    classVals[0].append(f"{k}_L")
+                    classVals[1].append(f"{k}_R")
     subsetLR=[]
     for i in validPatients:
         subsetLR.append(f"{i}_L")
@@ -312,11 +325,25 @@ def construct_data(
     validPatients=subsetLR
     
     np.random.seed(seed)
+    if stratSampling:
 
-    trainTestFolds=kFold_TrainTestSplit(validPatients,k=k_fold,testP=test_p)[0]
-    trainValFolds=kFold_TrainTestSplit(trainTestFolds['train'],k=k_fold,testP=val_p/(1-test_p))[0]
-    trainValFolds={'train':trainValFolds['train'],'val':trainValFolds['test']}
-    trainTestFolds.update(trainValFolds)
+        trainTestFolds=kFold_TrainTestSplit(classVals[0],k=k_fold,testP=test_p)[0]
+        trainValFolds=kFold_TrainTestSplit(trainTestFolds['train'],k=k_fold,testP=val_p/(1-test_p))[0]
+        trainValFolds={'train':trainValFolds['train'],'val':trainValFolds['test']}
+        trainTestFolds.update(trainValFolds)
+
+        trainTestFolds1=kFold_TrainTestSplit(classVals[1],k=k_fold,testP=test_p)[0]
+        trainValFolds1=kFold_TrainTestSplit(trainTestFolds1['train'],k=k_fold,testP=val_p/(1-test_p))[0]
+        trainValFolds1={'train':trainValFolds1['train'],'val':trainValFolds1['test']}
+        trainTestFolds1.update(trainValFolds1)
+
+        trainTestFolds={k:list(set(trainTestFolds[k]) | set(trainTestFolds1[k])) for k in trainTestFolds.keys()}
+        
+    else:
+        trainTestFolds=kFold_TrainTestSplit(validPatients,k=k_fold,testP=test_p)[0]
+        trainValFolds=kFold_TrainTestSplit(trainTestFolds['train'],k=k_fold,testP=val_p/(1-test_p))[0]
+        trainValFolds={'train':trainValFolds['train'],'val':trainValFolds['test']}
+        trainTestFolds.update(trainValFolds)
 
     folds=trainTestFolds # keys 'train' 'test' 'val'
     
@@ -382,7 +409,9 @@ def get_dataloaders(dataset_h5path,
         num_workers=1,
         seed=42,
         kMeansSaveDir=None,
-        flipTrain=True
+        stratSampling=True,
+        flipTrain=True,
+        excludePatients=[],
         ):
     """
     calls get_data and returns DataLoaders
@@ -393,7 +422,9 @@ def get_dataloaders(dataset_h5path,
         val_p=val_p,
         seed=seed,
         kMeansSaveDir=kMeansSaveDir,
-        flipTrain=flipTrain)
+        flipTrain=flipTrain,
+        stratSampling=stratSampling,
+        excludePatients=excludePatients)
     
     usePins= useGPU and torch.cuda.is_available()
     to_shuffle = True

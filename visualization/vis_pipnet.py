@@ -415,6 +415,8 @@ def plot_local_explanation(xs, local_explanation, title=""):
     rgb_colors = generate_rgb_array(num_ps)
     ps_scores = []
 
+    xsCopy=xs.clone()
+
     for i, (ps_idx, ps) in enumerate(local_explanation.items()):
         
         ps_coord = ps[0]
@@ -453,12 +455,12 @@ def plot_local_explanation(xs, local_explanation, title=""):
         edges_mask_b = edges_mask_b - erosion_mask_b
         edges_mask_b = (edges_mask_b > 0).to(dtype=torch.bool)
         
-        xs[edges_mask_r] = rgb_colors[i][0]
-        xs[edges_mask_g] = rgb_colors[i][1]
-        xs[edges_mask_b] = rgb_colors[i][2]
+        xsCopy[edges_mask_r] = rgb_colors[i][0]
+        xsCopy[edges_mask_g] = rgb_colors[i][1]
+        xsCopy[edges_mask_b] = rgb_colors[i][2]
         
         
-    plot_rgb_slices(np.array(xs[0,:,:,:,:]), title=title, legend=ps_scores)
+    plot_rgb_slices(np.array(xsCopy[0,:,:,:,:]), title=title, legend=ps_scores)
 
 
 

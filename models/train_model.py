@@ -393,7 +393,7 @@ def train_pipnet(
                 net.module._classification.normalization_multiplier.copy_(
                     torch.clamp(
                         net.module._classification.normalization_multiplier.data, 
-                        min=1.0)) 
+                        min=1.0)) ### do we really need this? this interferes with an interpretation of args['log_power']
                 
                 if net.module._classification.bias is not None:
                     

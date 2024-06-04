@@ -77,10 +77,13 @@ args={
     'test_split':.2,
     'defaultFinetune':True,
     'lr_finetune':.05,
-    'flipTrain':True,
-    'img_shape':[51,101,72],
-    'wshape':5,
-    'hshape':7,
+    'flipTrain':False,
+    'stratSampling':True,
+    'excludePatients':['735','322','531','523','876','552'],
+    'log_power':1,
+    'img_shape':[54,121,74],
+    'wshape':5, # this is assigned mid script and doesn't matter here
+    'hshape':8, # these matter and should bechanged to correct vals for the analyzing_network
     'dshape':7,
 }
 
@@ -225,8 +228,10 @@ def train():
     task_performed = "Train PIPNet"
 
     downSample=3.2
-    lowerBound=.2
-    inputData=f'data/FP923_LR_avgCrop_DS{int(downSample*10)}_point{int(lowerBound*100)}Thresh.h5'
+    lowerBound=.15
+    #inputData=f'data/FP923_LR_avgCrop_DS{int(downSample*10)}_point{int(lowerBound*100)}Thresh.h5'
+    inputData=f'data/FP_LR_OPNorm_avgcrop_DS{int(downSample*10)}_point{int(lowerBound*100)}Thresh.h5'
+
     #args = get_args(current_fold, net, task_performed)
 
 
@@ -270,7 +275,10 @@ def train():
                                 batchSize=args['batch_size'],
                                 seed=args['seed'],
                                 kMeansSaveDir=f"{args['log_dir']}/kMeans_DS32.json",
-                                flipTrain=args['flipTrain'])
+                                flipTrain=args['flipTrain'],
+                                stratSampling=args['stratSampling'],
+                                excludePatients=args['excludePatients'],
+                                )
 
     trainloader = dataloaders[0]
     trainloader_pretraining = dataloaders[1]
@@ -307,6 +315,10 @@ def train():
     newFeatures=nn.Sequential(testLayer[0],feature_net)
     """
 
+
+    classification_layer.normalization_multiplier=nn.Parameter(
+            torch.ones((1,), requires_grad = True)*args['log_power'])
+
     net = PIPNet(
         num_classes = args['num_classes'],
         num_prototypes = num_prototypes,
@@ -318,6 +330,7 @@ def train():
         )
 
     net = net.to(device=device)
+    
     net = nn.DataParallel(net, device_ids = [0])  
 
     optimizer = get_optimizer_nn(net, args)
@@ -843,9 +856,10 @@ def train():
 
 
 if __name__=='__main__':
-
+    #args['log_dir']=f"logs/testClassMult"
+    #train()
     for i in [4]:
-        args['log_dir']=f"logs/PT_tan5_backbone1en4_flipTrain_fold{i}"
+        args['log_dir']=f"logs/OPNorm9995_tan2_backbone1en4_fold{i}"
         args['seed']=42+5*i
         train()
     
