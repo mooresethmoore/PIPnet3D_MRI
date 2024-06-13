@@ -85,6 +85,7 @@ args={
     'wshape':5, # this is assigned mid script and doesn't matter here
     'hshape':8, # these matter and should bechanged to correct vals for the analyzing_network
     'dshape':7,
+    'backboneStrides':[1,2,2,2],
 }
 
 
@@ -93,7 +94,8 @@ args={
 def get_network(num_classes: int,
                 args):
     features=video_resnet18_features(
-        pretrained = not args['disable_pretrained'])
+        pretrained = not args['disable_pretrained'],
+        backboneStrides=args['backboneStrides'])
     first_add_on_layer_in_channels = \
             [i for i in features.modules() if isinstance(i, nn.Conv3d)][-1].out_channels
     
@@ -858,8 +860,19 @@ def train():
 if __name__=='__main__':
     #args['log_dir']=f"logs/testClassMult"
     #train()
-    for i in [4]:
-        args['log_dir']=f"logs/OPNorm9995_tan2_backbone1en4_fold{i}"
-        args['seed']=42+5*i
-        train()
+
+
+
+    #for i in [4]:
+    #    args['log_dir']=f"logs/OPNorm9995_tan2_backbone1en4_fold{i}"
+    #    args['seed']=42+5*i
+    #    train()
     
+    #args['epochs_finetune']=1
+    #args['epochs_pretrain']=3
+    #args['epochs']=3
+    args['batch_size']=10
+    args['backboneStrides']=[1,2,1,1]
+    args['log_dir']=f"logs/testStride1211" #recall physical hardcode change within resnet_features.py
+    train()
+

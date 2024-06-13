@@ -149,17 +149,26 @@ class VideoResNet_features(nn.Module):
         stem: Callable[..., nn.Module],
         num_classes: int = 400,
         zero_init_residual: bool = False,
+        backboneStrides=[1,2,2,2],
     ) -> None:
 
         super().__init__()
         self.inplanes = 64
 
         self.stem = stem()
+        
+        if len(backboneStrides)==4:
+            self.layer1 = self._make_layer(block, conv_makers[0], 64, layers[0], stride=backboneStrides[0])
+            self.layer2 = self._make_layer(block, conv_makers[1], 128, layers[1], stride=backboneStrides[1])
+            self.layer3 = self._make_layer(block, conv_makers[2], 256, layers[2], stride=backboneStrides[2])
+            self.layer4 = self._make_layer(block, conv_makers[3], 512, layers[3], stride=backboneStrides[3]) #changed from 2
 
-        self.layer1 = self._make_layer(block, conv_makers[0], 64, layers[0], stride=1)
-        self.layer2 = self._make_layer(block, conv_makers[1], 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, conv_makers[2], 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, conv_makers[3], 512, layers[3], stride=2)
+        else:
+
+            self.layer1 = self._make_layer(block, conv_makers[0], 64, layers[0], stride=1)
+            self.layer2 = self._make_layer(block, conv_makers[1], 128, layers[1], stride=2)
+            self.layer3 = self._make_layer(block, conv_makers[2], 256, layers[2], stride=2)
+            self.layer4 = self._make_layer(block, conv_makers[3], 512, layers[3], stride=1) #changed from 2
 
         #self.avgpool = nn.AdaptiveAvgPool3d((1, 1, 1))
         #self.fc = nn.Linear(512 * block.expansion, num_classes)
@@ -223,7 +232,7 @@ class VideoResNet_features(nn.Module):
         return nn.Sequential(*layers)
 
 
-def video_resnet18_features(pretrained=True) -> VideoResNet_features:
+def video_resnet18_features(pretrained=True,backboneStrides=[1,2,2,2]) -> VideoResNet_features:
     
     """ Constructs a 3D ResNet-18 model.
     Args:
@@ -235,7 +244,9 @@ def video_resnet18_features(pretrained=True) -> VideoResNet_features:
         [Conv3DSimple] * 4,
         [2, 2, 2, 2],
         BasicStem,
+        backboneStrides=backboneStrides
     )
+
     
     if pretrained:
         weights = models.video.R3D_18_Weights.DEFAULT # best available weights 
