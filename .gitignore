@@ -6,3 +6,5 @@ localExplanationChecker_forJake.m
 ApproxTimeEpoch_pretrain_DS40_point20Thresh.txt
 ApproxTimeEpoch_pretrain_DS32_point20Thresh.txt
 ApproxTimeEpoch_pretrain_DS30_point20Thresh.txt
+dict2args.ipynb
+logs_old/

@@ -2,7 +2,7 @@ import argparse
 import os
 import math
 import numpy as np
-import SimpleITK as sitk
+
 import random
 import pandas as pd
 from typing import Tuple, Dict
@@ -180,7 +180,8 @@ class AugSupervisedDataset(torch.utils.data.Dataset):
             volume = self.transform(volume)
             img_min = volume.min()
             img_max = volume.max()
-            volume = (volume-img_min)/(img_max-img_min)
+            if img_max>img_min:
+                volume = (volume-img_min)/(img_max-img_min)
 
         return volume.type(torch.float32), torch.tensor(label).type(torch.LongTensor)
 

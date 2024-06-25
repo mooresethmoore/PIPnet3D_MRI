@@ -454,9 +454,14 @@ def calculate_loss(
         loss += t_weight * tanh_loss
     
     if not pretrain:
-        softmax_inputs = torch.log1p(out**net_normalization_multiplier)
-        class_loss = criterion(F.log_softmax((softmax_inputs), dim=1), ys)
-        
+        if len(out[0])>1:
+
+            softmax_inputs = torch.log1p(out**net_normalization_multiplier)
+            class_loss = criterion(F.log_softmax((softmax_inputs), dim=1), ys)
+        else:
+            tanh_output = torch.tanh(out) # which dim do we do this when we're considering batchsize
+            criterion_input=torch.log(torch.tensor([[ 1-i[0],i[0]] for i in tanh_output])).to(out.device)
+            class_loss=criterion(criterion_input+1e-6,ys)
         if finetune:
             loss= cl_weight * class_loss
         else:

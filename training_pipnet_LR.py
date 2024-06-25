@@ -237,7 +237,8 @@ def train():
     #args = get_args(current_fold, net, task_performed)
 
 
-
+    ### for now, experiment_folder is log_dir
+    args['experiment_folder']=args['log_dir']
 
 
     if not os.path.isdir(args['log_dir']):
