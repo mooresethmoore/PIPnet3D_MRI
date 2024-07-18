@@ -264,7 +264,8 @@ class TwoAugSelfSupervisedDataset(torch.utils.data.Dataset):
                 newVolume = self.transform(volume)
                 img_min = newVolume.min()
                 img_max = newVolume.max()
-                newVolume  = (newVolume -img_min)/(img_max-img_min)
+                if img_max>img_min:
+                    newVolume  = (newVolume -img_min)/(img_max-img_min)
                 volumes.append(newVolume)
         else:
             volumes=[volume,volume]

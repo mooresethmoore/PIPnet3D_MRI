@@ -46,23 +46,27 @@ sys.path.append(vis_dir)
 #from vis_pipnet import visualize, visualize_topk
 
 
+downSample=3.2
+lowerBound=.15
+
 args={
+    'inputData':f'data/FP_LR_OPNorm_avgcrop_DS{int(downSample*10)}_point{int(lowerBound*100)}Thresh.h5',
+    'batch_size':10,
+    'num_classes':1,
+    'epochs':5,
+    'epochs_pretrain':1,
+    'freeze_epochs':0,
+    'epochs_finetune':0,
     'seed':44,
     'experiment_folder':'data/experiment_1',
     'lr':.0001,
     'lr_net':.0001,
     'lr_block':.0001,
-    'lr_class':.0001,
+    'lr_class':.05,
     'lr_backbone':.0001,
     'weight_decay':0,
     'gamma':.1,
     'step_size':1,
-    'batch_size':15,
-    'epochs':160,
-    'epochs_pretrain':30,
-    'freeze_epochs':0,
-    'epochs_finetune':10,
-    'num_classes':2,
     'channels':3,
     'net':"3Dresnet18",
     'num_features':0,
@@ -86,6 +90,7 @@ args={
     'hshape':8, # these matter and should bechanged to correct vals for the analyzing_network
     'dshape':7,
     'backboneStrides':[1,2,2,2],
+    'verbose':False,
 }
 
 
@@ -232,8 +237,8 @@ def train():
     downSample=3.2
     lowerBound=.15
     #inputData=f'data/FP923_LR_avgCrop_DS{int(downSample*10)}_point{int(lowerBound*100)}Thresh.h5'
-    inputData=f'data/FP_LR_OPNorm_avgcrop_DS{int(downSample*10)}_point{int(lowerBound*100)}Thresh.h5'
-
+    #inputData=f'data/FP_LR_OPNorm_avgcrop_DS{int(downSample*10)}_point{int(lowerBound*100)}Thresh.h5'
+    inputData=args['inputData']
     #args = get_args(current_fold, net, task_performed)
 
 
@@ -440,19 +445,19 @@ def train():
 
 
         #TODO recreate some log  for classes>2, but for now, we skip
-        
-        log.create_log('log_epoch_overview',
-                        'epoch',
-                        'test_top1_acc',
-                        'test_f1',
-                        'test_sensitivity',
-                        'test_specificity',
-                        'almost_sim_nonzeros',
-                        'local_size_all_classes',
-                        'almost_nonzeros_pooled', 
-                        'num_nonzero_prototypes', 
-                        'mean_train_acc', 
-                        'mean_train_loss_during_epoch')
+        if args['verbose']:
+            log.create_log('log_epoch_overview',
+                            'epoch',
+                            'test_top1_acc',
+                            'test_f1',
+                            'test_sensitivity',
+                            'test_specificity',
+                            'almost_sim_nonzeros',
+                            'local_size_all_classes',
+                            'almost_nonzeros_pooled', 
+                            'num_nonzero_prototypes', 
+                            'mean_train_acc', 
+                            'mean_train_loss_during_epoch')
         
         print("Your dataset only has two classes. Is the number of samples \
             per class similar? If the data is imbalanced, we recommend to \
@@ -465,18 +470,18 @@ def train():
         # Create a csv log for storing the test accuracy (top 1 and top 5), 
         # mean train accuracy and mean loss for each epoch
 
-        
-        print("Create LOG!!")
-        log.create_log('log_epoch_overview', 
-                        'epoch', 
-                        'test_top1_acc', 
-                        'test_top5_acc', 
-                        'almost_sim_nonzeros', 
-                        'local_size_all_classes',
-                        'almost_nonzeros_pooled', 
-                        'num_nonzero_prototypes', 
-                        'mean_train_acc', 
-                        'mean_train_loss_during_epoch')
+        if args['verbose']:
+            print("Create LOG!!")
+            log.create_log('log_epoch_overview', 
+                            'epoch', 
+                            'test_top1_acc', 
+                            'test_top5_acc', 
+                            'almost_sim_nonzeros', 
+                            'local_size_all_classes',
+                            'almost_nonzeros_pooled', 
+                            'num_nonzero_prototypes', 
+                            'mean_train_acc', 
+                            'mean_train_loss_during_epoch')
         
     lrs_pretrain_net = []
     # 3D-PIPNet Training
@@ -525,19 +530,19 @@ def train():
         plt.plot(lrs_pretrain_net)
         plt.savefig(os.path.join(args['log_dir'],'lr_pretrain_net.png'))
         
-        
-        log.log_values('log_epoch_overview', 
-                        epoch, 
-                        "n.a.", 
-                        "n.a.",
-                        "n.a.",
-                        "n.a.", 
-                        "n.a.", 
-                        "n.a.", 
-                        "n.a.", 
-                        "n.a.", 
-                        "n.a.", 
-                        train_info['loss'])
+        if args['verbose']:
+            log.log_values('log_epoch_overview', 
+                            epoch, 
+                            "n.a.", 
+                            "n.a.",
+                            "n.a.",
+                            "n.a.", 
+                            "n.a.", 
+                            "n.a.", 
+                            "n.a.", 
+                            "n.a.", 
+                            "n.a.", 
+                            train_info['loss'])
     
     approxTimePerEpochMinutes=round((datetime.datetime.now()-timePretrain).seconds/60/args['epochs_pretrain'])
     if args['state_dict_dir_net'] == '':
@@ -712,19 +717,20 @@ def train():
         
         # Evaluate model
         eval_info = eval_pipnet(net, testloader, epoch, device, log)
-        log.log_values(
-            'log_epoch_overview', 
-            epoch, 
-            eval_info['top1_accuracy'], 
-            eval_info['top5_accuracy'], 
-            eval_info['sensitivity'],
-            eval_info['specificity'],
-            eval_info['almost_sim_nonzeros'], 
-            eval_info['local_size_all_classes'], 
-            eval_info['almost_nonzeros'], 
-            eval_info['num non-zero prototypes'], 
-            train_info['train_accuracy'], 
-            train_info['loss'])
+        if args['verbose']:
+            log.log_values(
+                'log_epoch_overview', 
+                epoch, 
+                eval_info['top1_accuracy'], 
+                eval_info['top5_accuracy'], 
+                eval_info['sensitivity'],
+                eval_info['specificity'],
+                eval_info['almost_sim_nonzeros'], 
+                eval_info['local_size_all_classes'], 
+                eval_info['almost_nonzeros'], 
+                eval_info['num non-zero prototypes'], 
+                train_info['train_accuracy'], 
+                train_info['loss'])
         
         with torch.no_grad():
             net.eval()
@@ -872,8 +878,8 @@ if __name__=='__main__':
     #args['epochs_finetune']=1
     #args['epochs_pretrain']=3
     #args['epochs']=3
-    args['batch_size']=10
-    args['backboneStrides']=[1,2,1,1]
-    args['log_dir']=f"logs/testStride1211" #recall physical hardcode change within resnet_features.py
+    #args['batch_size']=10
+    #args['backboneStrides']=[1,2,1,1]
+    args['log_dir']=f"logs/testMRI1D" #recall physical hardcode change within resnet_features.py
     train()
 

@@ -105,9 +105,12 @@ def eval_pipnet(
     # Keep an info dict about the procedure
     info = dict()
     # Build a confusion matrix
-    cm = np.zeros((net.module._num_classes, net.module._num_classes), 
-                  dtype = int)
-
+    if net.module._num_classes<2:
+        cm = np.zeros((2, 2), 
+                    dtype = int)
+    else:
+        cm = np.zeros((net.module._num_classes, net.module._num_classes), 
+                    dtype = int)
     global_top1acc = 0.
     global_top5acc = 0.
     global_sim_anz = 0.
@@ -132,7 +135,10 @@ def eval_pipnet(
             
             # Use the model to classify this batch of input data
             _, pooled, out = net(xs, inference = True)
-            
+            if net.module._num_classes<2:
+                atanhPoint5=0.549306144334055
+                outN = torch.tensor([[atanhPoint5,i[0]] for i in out]).to(out.device)
+                out=outN
             max_out_score, ys_pred = torch.max(out, dim=1) # max, max_idx
             
             ys_pred_scores = torch.amax(F.softmax((torch.log1p(
@@ -165,8 +171,12 @@ def eval_pipnet(
             global_anz += almost_nz.sum().item()
             
             # Update the confusion matrix
-            cm_batch = np.zeros((net.module._num_classes, 
-                                 net.module._num_classes), dtype = int)
+            if net.module._num_classes<2:
+                cm_batch = np.zeros((2, 2), 
+                            dtype = int)
+            else:
+                cm_batch = np.zeros((net.module._num_classes, net.module._num_classes), 
+                            dtype = int)
             
             for y_pred, y_true in zip(ys_pred, ys):
                 
@@ -275,6 +285,7 @@ def eval_pipnet(
 
     
 def acc_from_cm(cm: np.ndarray) -> float:
+
     """
     Compute the accuracy from the confusion matrix
     :param cm: confusion matrix

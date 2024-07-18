@@ -456,9 +456,17 @@ def calculate_loss(
         loss += t_weight * tanh_loss
     
     if not pretrain:
-        softmax_inputs = torch.log1p(out**net_normalization_multiplier)
-        class_loss = criterion(F.log_softmax((softmax_inputs), dim=1), ys)
-        
+        if len(out[0])>1:
+
+            softmax_inputs = torch.log1p(out**net_normalization_multiplier)
+            class_loss = criterion(F.log_softmax((softmax_inputs), dim=1), ys)
+        else:
+            smallNum=5e-8 # exact value doesn't really matter
+
+            ###tanh_output = torch.tanh(out) # OLD -which dim do we do this when we're considering batchsize
+            tanh_output = (1-smallNum)*torch.tanh(out)+smallNum/2# just scrunching the tanh for numerical stability
+            criterion_input=torch.log(torch.tensor([[ 1-i[0],i[0]] for i in tanh_output])).to(out.device)
+            class_loss=criterion(criterion_input,ys)
         if finetune:
             loss= cl_weight * class_loss
         else:
@@ -478,9 +486,15 @@ def calculate_loss(
     acc = 0.
     
     if not pretrain:
-        ys_pred_max = torch.argmax(out, dim=1)
-        correct = torch.sum(torch.eq(ys_pred_max, ys))
-        acc = correct.item() / float(len(ys))
+        if len(out[0])>1:
+            ys_pred_max = torch.argmax(out, dim=1)
+            correct = torch.sum(torch.eq(ys_pred_max, ys))
+            acc = correct.item() / float(len(ys))
+        else:
+            atanhPoint5=0.549306144334055
+            outPred=torch.tensor([1  if i[0]==True else 0 for i in out>atanhPoint5]).to(out.device)
+            correct = torch.sum(torch.eq(outPred, ys))
+            acc = correct.item() / float(len(ys))
     
     return loss, acc
 

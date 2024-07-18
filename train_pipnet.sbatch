@@ -11,7 +11,7 @@
 
 
 
-ml miniconda3/23.3.1-py310 cuda/11.8.0
+ml miniconda3/24.1.2-py310 cuda/11.8.0
 source activate pytorch
 
 python training_pipnet_OSC.py
