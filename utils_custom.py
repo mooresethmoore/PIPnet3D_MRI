@@ -51,9 +51,10 @@ def get_args(
         epochs_pretrain = 30
         epochs = 90
         optimizer = "Adam"
-        lr = 0.05
-        lr_block = 0.0005
-        lr_net = 0.0005
+        lr = 0.0001
+        lr_net=.0001
+        lr_block = 0.0001
+        lr_net = 0.0001
         weight_decay = 0.0
         num_features = 0
         freeze_epochs = 10
@@ -82,7 +83,7 @@ def get_args(
         freeze_epochs = 10
  
     
-    classification_task = "Binary_Classification/" if num_classes == 2 else "Multiclass_Classification/"
+    classification_task = "Binary_Classification/" if 1<= num_classes <=2 else "Multiclass_Classification/"
                           
     n_fold = 5           # Number of fold
     val_split = 0.2
@@ -100,18 +101,12 @@ def get_args(
     parser = argparse.ArgumentParser('Train a PIP-Net')    
     parser.add_argument('--task_performed',  type = str, default = task_performed, help = 'String which differentiates between Black-box vs PIPNet training')  
     parser.add_argument('--dataset_path', type = str, default = dataset_path, help = 'Folders path of preprocessed images')
-    parser.add_argument('--metadata_path', type = str, default = metadata_path, help = 'Path of .csv metadata file')
     parser.add_argument('--downscaling', type = int, default = downscaling,  help = 'Subsampling factor')
-    parser.add_argument('--rows', type = int, default = rows, help = 'Number of rows in input image')
-    parser.add_argument('--cols', type = int, default = cols, help = 'Number of columns in input image')
-    parser.add_argument(' --slices', type = int, default = slices, help = 'Number of slices in input image')
     parser.add_argument('--channels', type = int, default = channels, help = 'N° of channel of the input volume passed to the network')
-    parser.add_argument( '--img_shape', type = tuple, default = (slices, rows, cols), help = 'Shape of the input volume passed to the network')
     parser.add_argument('--dic_classes', type = dict, default = dic_classes, help = 'Dictionary "labels": class_id')
     parser.add_argument('--num_classes', type = int,  default = num_classes,  help = 'Subsampling factor')
-    parser.add_argument('--out_shape', type = int, default = out_shape, help = 'Subsampling factor')
     parser.add_argument('--net', type = str, default = net, help = 'Base network used as backbone of PIP-Net. ')
-    parser.add_argument('--freeze_extractor', type = bool, default = False,  help = '')
+    #parser.add_argument('--freeze_extractor', type = bool, default = False,  help = '')
     parser.add_argument('--current_fold',  type = int, default = current_fold, help = 'N° of the current fold used ad test set')
     parser.add_argument('--n_fold', type = int, default = n_fold, help = 'N° of fold in the k-fold cross validation')
     parser.add_argument('--val_split', type = float, default = val_split, help = 'Percentage of validation set')

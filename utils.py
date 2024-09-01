@@ -673,7 +673,7 @@ def get_optimizer_nn(
             weight_decay = args.weight_decay)
         optimizer_classifier = torch.optim.AdamW(
             paramlist_classifier,
-            lr = args.lr,
+            lr = args.lr, # this doesn't allow a modular lr between this param and the class_weight
             weight_decay = args.weight_decay)
         return optimizer_net, optimizer_classifier, params_to_freeze, params_to_train, params_backbone
     

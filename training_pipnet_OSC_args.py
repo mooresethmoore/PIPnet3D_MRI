@@ -215,6 +215,7 @@ def train():
                                 seed=args.seed,
                                 kMeansSaveDir=f"{args.log_dir}/kMeans_DS32.json",
                                 flipTrain=args.flipTrain,
+                                num_workers=args.num_workers
                                 stratSampling=args.stratSampling,
                                 excludePatients=args.excludePatients,
                                 )
